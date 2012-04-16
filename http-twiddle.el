@@ -118,8 +118,7 @@ is substituted with the evaluated value formatted as string."
              (buffer-live-p (process-buffer http-twiddle-process)))
     (with-current-buffer (process-buffer http-twiddle-process)
       (let ((inhibit-read-only t))
-        (widen)
-        (delete-region (point-min) (point-max)))))
+        (erase-buffer))))
 
   (let ((content (buffer-string)))
     (with-temp-buffer

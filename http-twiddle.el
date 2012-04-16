@@ -85,26 +85,30 @@ Use `http-twiddle-mode-send' (\\[http-twiddle-mode-send]) to send the request."
 \(To make XEmacs happy.)")
 
 (defconst http-twiddle-font-lock-keywords
-  (list
-   '("^X-[a-zA-Z0-9-]+:" . font-lock--face)
-   '("^[a-zA-Z0-9-]+:" . font-lock-keyword-face)
-   '("HTTP/1.[01] [45][0-9][0-9] .*" . font-lock-warning-face)
-   '("HTTP/1.[01] [23][0-9][0-9] .*" . font-lock-type-face)
-   '("HTTP/1.[01]?$" . font-lock-constant-face)
-   (cons (regexp-opt '("GET" "POST" "HEAD" "PUT" "DELETE" "TRACE" "CONNECT"))
-         font-lock-constant-face))
+  '(("^\\(GET\\|PUT\\|POST\\|DELETE\\|HEAD\\|TRACE\\|CONNECT\\) \\(.*\\)" .
+     ((1 font-lock-function-name-face) (2 font-lock-string-face)))
+    ("^\\([Xx]-[A-Za-z-]+\\): \\(.*\\)$" .
+     ((1 font-lock-warning-face) (2 font-lock-string-face)))
+    ("^\\([A-Za-z-]+\\): \\(.*\\)" .
+     ((1 font-lock-constant-face) (2 font-lock-string-face)))
+    ("^\\(HTTP/[0-9\.]+\\) \\([123][0-9]{2} .*\\)" .
+     ((1 font-lock-function-face) (2 font-lock-constant-face)))
+    ("^\\(HTTP/[0-9\.]+\\) \\([^123][0-9]{2} .*\\)" .
+     ((1 font-lock-function-face) (2 font-lock-error-face))))
+
   "Keywords to highlight in http-twiddle-response-mode.")
 
 (defconst http-twiddle-response-mode-map
   (make-sparse-keymap)
   "Keymap for http-twiddle-response-mode.")
 
-(define-generic-mode http-twiddle-response-mode
-  nil nil http-twiddle-font-lock-keywords
-  nil
-  '((lambda ()
-      (use-local-map http-twiddle-response-mode-map)))
-  "Major mode for interacting with HTTP responses.")
+(define-derived-mode http-twiddle-response-mode fundamental-mode "Response"
+  (use-local-map http-twiddle-response-mode-map)
+  (setq font-lock-defaults '(http-twiddle-font-lock-keywords)))
+
+(define-derived-mode http-twiddle-request-mode fundamental-mode "Request"
+  (http-twiddle-mode)
+  (setq font-lock-defaults '(http-twiddle-font-lock-keywords)))
 
 (defun http-twiddle-mode-send (host port)
   "Send the current buffer to the server.
